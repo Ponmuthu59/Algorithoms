@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Algorithm Generator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            height: 100vh;
+        }
+        #left-panel {
+            width: 50%;
+            padding: 20px;
+            box-sizing: border-box;
+            border-right: 2px solid #ccc;
+            background: #f4f4f4;
+        }
+        #right-panel {
+            width: 50%;
+            padding: 20px;
+            box-sizing: border-box;
+            background: #ffffff;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+        }
+        .step-container {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            background: #f9f9f9;
+            height: calc(100% - 40px);
+            overflow-y: auto;
+        }
+        .inputs.hidden {
+            display: none;
+        }
+        form {
+            margin-top: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            background: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <!-- Left Panel for Input Form -->
+    <div id="left-panel">
+        <h1>Algorithm Generator</h1>
+        <form id="algorithm-form">
+            <label for="text">Input Text:</label><br>
+            <input type="text" id="text" name="text" placeholder="Enter text for the algorithm"><br><br>
+
+            <div id="dh-inputs" class="inputs hidden">
+                <label for="p">Prime Number (p):</label>
+                <input type="number" id="p" name="p"><br>
+                
+                <label for="g">Primitive Root (g):</label>
+                <input type="number" id="g" name="g"><br>
+                
+                <label for="a">Private Key A:</label>
+                <input type="number" id="a" name="a"><br>
+                
+                <label for="b">Private Key B:</label>
+                <input type="number" id="b" name="b"><br><br>
+            </div>
+
+            <label for="algorithm">Select Algorithm:</label><br>
+            <select id="algorithm" name="algorithm" required>
+                <option value="">--Select an Algorithm--</option>
+                <option value="md5">MD5</option>
+                <option value="sha256">SHA256</option>
+                <option value="base64">Base64</option>
+                <option value="binary">Binary Conversion</option>
+                <option value="octal">Octal Conversion</option>
+                <option value="diffie_hellman">Diffie-Hellman Key Exchange</option>
+            </select><br><br>
+
+            <button type="submit">Generate</button>
+        </form>
+    </div>
+
+    <!-- Right Panel for Step-by-Step Display -->
+    <div id="right-panel">
+        <h2>Step-by-Step Process</h2>
+        <div id="steps-container" class="step-container hidden">
+            <p id="current-step"></p>
+            <button id="next-button">Next</button>
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('algorithm-form');
+        const dhInputs = document.getElementById('dh-inputs');
+        const stepsContainer = document.getElementById('steps-container');
+        const currentStepElement = document.getElementById('current-step');
+        const nextButton = document.getElementById('next-button');
+
+        let steps = [];
+        let currentStepIndex = 0;
+
+        // Show/hide Diffie-Hellman inputs
+        document.getElementById('algorithm').addEventListener('change', (event) => {
+            dhInputs.classList.toggle('hidden', event.target.value !== 'diffie_hellman');
+        });
+
+        form.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            
+            const formData = new FormData(form);
+            const response = await fetch('/generate', {
+                method: 'POST',
+                body: formData
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                steps = data.steps;
+                currentStepIndex = 0;
+
+                stepsContainer.classList.remove('hidden');
+                currentStepElement.textContent = steps[currentStepIndex];
+            } else {
+                alert("An error occurred. Please try again.");
+            }
+        });
+
+        nextButton.addEventListener('click', () => {
+            if (currentStepIndex < steps.length - 1) {
+                currentStepIndex++;
+                currentStepElement.textContent = steps[currentStepIndex];
+            } else {
+                alert("You have reached the final step!");
+            }
+        });
+    </script>
+</body>
+</html>
